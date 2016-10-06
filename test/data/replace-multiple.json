@@ -1,0 +1,7 @@
+{
+  "li": [
+    {"replace": "one" },
+    {"replace": "two" },
+    {"replace": "three" }
+  ]
+}

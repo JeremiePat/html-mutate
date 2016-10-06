@@ -1,0 +1,17 @@
+{
+  "li[class=fruit]": {
+    "attr:class": 0
+  },
+  "li[class=vegetable]": {
+    "attr:class": ""
+  },
+  "li[class=unknown]": {
+    "attr:class": null
+  },
+  "li[class=little]": {
+    "attr:class": []
+  },
+  "li[class=doctor]": {
+    "attr:class": {}
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "li[class=fruit]": null,
+  "li[class=vegetable]": "",
+  "li[class=unknown]": 0,
+  "li[class=little]": [],
+  "li[class=doctor]": {}
+}
