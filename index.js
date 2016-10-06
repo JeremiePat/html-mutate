@@ -125,20 +125,26 @@ function promise (stream, data) {
 // Expose module API
 // ----------------------------------------------------------------------------
 
-module.exports = function (tpl) {
-  var html
+module.exports = function (html) {
+  var isFile = false
 
   try {
-    fs.accessSync(tpl)
-    html = fs.createReadStream(tpl).on('error', (err) => { throw err })
-  } catch (e) {
-    html = new Readable()
-    html.push(tpl)
-    html.push(null)
-  }
+    fs.accessSync(html)
+    isFile = true
+  } catch (e) { }
 
   function stream (data) {
-    return html.pipe(inject(data))
+    var flow
+
+    if (isFile) {
+      flow = fs.createReadStream(html).on('error', (err) => { throw err })
+    } else {
+      flow = new Readable()
+      flow.push(html)
+      flow.push(null)
+    }
+
+    return flow.pipe(inject(data))
   }
 
   stream.inject = inject
