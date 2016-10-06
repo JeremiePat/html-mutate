@@ -44,9 +44,9 @@ Return a readable stream of the resulting HTML file
 more about the expected data format
 
 ```javascript
-const fs   = require('fs')
-const mutate  = require('html-mutate')
-const data = require('./data.json')
+const fs     = require('fs')
+const mutate = require('html-mutate')
+const data   = require('./data.json')
 
 const template = mutate('./base.html')
 
@@ -61,9 +61,9 @@ following signature: `fn(err, html)` where `err` is a possible [Error](https://d
 object and `html` the successful transformed HTML
 
 ```javascript
-const fs   = require('fs')
-const mutate  = require('html-mutate')
-const data = require('./data.json')
+const fs     = require('fs')
+const mutate = require('html-mutate')
+const data   = require('./data.json')
 
 const template = mutate('./base.html')
 
@@ -79,9 +79,9 @@ template.callback(data, (err, html) => {
 Return a Promise where the success callback will get the transformed HTML
 
 ```javascript
-const fs   = require('fs')
-const mutate  = require('html-mutate')
-const data = require('./data.json')
+const fs     = require('fs')
+const mutate = require('html-mutate')
+const data   = require('./data.json')
 
 const template = mutate('./base.html')
 
