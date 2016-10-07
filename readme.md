@@ -198,6 +198,47 @@ the attribute to change.
 
 > **NOTE:** _Using the value `null` will remove the attribute if it exists_
 
+### Duplicating and replacing elements
+
+Elements can be duplicate using the key `clone`. Its value is a number
+indicating the number of clones to produce
+
+```javascript
+const mutate = require('html-mutate')
+
+var html = mutate('<span id="wtf">Hi!</span>\n')
+
+html({node
+  "span": { clone: 2 }
+}).pipe(process.stdout)
+
+// Output: <span>Hi!</span><span>Hi!</span><span>Hi!</span>\n
+```
+
+> **NOTE:** _When using clone, if the target element has an `id` attribute,
+            this attribute is removed. Duplicate ids can lead to some tricky
+            issues with CSS or JS. If you are duplicating an element with an id
+            there is a high chance you are doing something very nasty, and you
+            shouldn't._
+
+Rather than duplicating an element, it is possible to replace it using
+`clone:0` with `replace` to define the new element (or to remove it if you use
+`replace:null`):
+
+```javascript
+const mutate = require('html-mutate')
+
+var html = mutate('<span>Hi!</span>\n')
+
+html({node
+  "span": {
+    clone: 0
+    replace: "<strong>Hello</strong>"
+  }
+}).pipe(process.stdout)
+
+// Output: <strong>Hello</strong>\n
+```
 
 More examples?
 -------------------------------------------------------------------------------
