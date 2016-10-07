@@ -8,8 +8,8 @@ const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
 
-const tpl = require('../index.js')
-const concat = require('../lib/concat.js')
+const tpl = require('../index')
+const concat = require('../lib/concat')
 
 const TPL_FILE = path.join(__dirname, 'tpl', 'test.html')
 const DATA_DIR = path.join(__dirname, 'data')
@@ -33,7 +33,7 @@ describe('Testing DATA API', function () {
     ],
     'Cloning Content': [
       { title: 'Regular clone syntax', files: 'clone' },
-      { title: 'Clone remove the id attribute', files: 'clone-id'}
+      { title: 'Clone remove the id attribute', files: 'clone-id' }
     ],
     'Mutating Attributes': [
       { title: 'Changing attribute values', files: 'attributes' },

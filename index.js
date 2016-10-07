@@ -78,12 +78,6 @@ function keyType (key) {
   if (key.slice(0, 5) === 'attr:') { return 'string' }
 }
 
-function isAttributeKey (key) {
-  if (key.slice(0, 5) !== 'attr:') { return false }
-
-  return key.slice(5)
-}
-
 /** Make sure a value is a Value Object with the appropriate key
  *
  * a Value Object is an object with at least one of the following key:
@@ -199,7 +193,7 @@ function inject (data) {
       queue.pipe(stream)
 
       Object.keys(val).forEach(function (key) {
-        var attr = isAttributeKey(key)
+        var [, attr] = key.split(':')
         if (!attr) { return }
 
         var aVal = val[key]

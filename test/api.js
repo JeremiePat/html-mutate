@@ -8,8 +8,8 @@ const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
 
-const tpl = require('../index.js')
-const concat = require('../lib/concat.js')
+const tpl = require('../index')
+const concat = require('../lib/concat')
 
 const tplFile = path.join(__dirname, 'tpl', 'test.html')
 const tplContent = fs.readFileSync(tplFile, 'utf8')
