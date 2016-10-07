@@ -12,6 +12,38 @@ const concat = require('./lib/concat')
 
 const ATTR_RGX = /^attr:[a-z-]+$/
 
+class Append extends Transform {
+  constructor (value) {
+    super()
+    this.value = String(value)
+  }
+
+  _transform (buf, _, cb) {
+    cb(null, buf)
+  }
+
+  _flush (cb) {
+    this.push(this.value)
+    cb()
+  }
+}
+
+class Replace extends Transform {
+  constructor (value) {
+    super()
+    this.value = String(value)
+  }
+
+  _transform (buf, _, cb) {
+    cb()
+  }
+
+  _flush (cb) {
+    this.push(this.value)
+    cb()
+  }
+}
+
 function sanytizeValue (value) {
   if (typeof value === 'string') {
     return {replace: value}
@@ -71,22 +103,20 @@ function inject (data) {
         return
       }
 
-      const replace = new Transform({
-        transform (chunk, _, cb) { cb() },
-        flush (cb) { this.push(val.replace); cb() }
-      })
-
-      const append = new Transform({
-        transform (chunk, _, cb) { cb(null, chunk) },
-        flush (cb) { this.push(val.append); cb() }
-      })
-
       var stream = elem.createStream()
       var queue = stream
 
       if ('prepend' in val) { queue.write(val.prepend) }
-      if ('replace' in val) { queue = queue.pipe(replace) }
-      if ('append' in val) { queue = queue.pipe(append) }
+
+      if ('replace' in val) {
+        let replace = new Replace(val.replace)
+        queue = queue.pipe(replace)
+      }
+
+      if ('append' in val) {
+        let append = new Append(val.append)
+        queue = queue.pipe(append)
+      }
 
       queue.pipe(stream)
 
