@@ -31,6 +31,9 @@ describe('Testing DATA API', function () {
       { title: 'Regular append syntax', files: 'append' },
       { title: 'Regular prepend syntax', files: 'prepend' }
     ],
+    'Cloning Content': [
+      { title: 'Regular clone syntax', files: 'clone' }
+    ],
     'Mutating Attributes': [
       { title: 'Changing attribute values', files: 'attributes' },
       { title: 'Removing attributes', files: 'attributes-remove' }
