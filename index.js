@@ -125,7 +125,7 @@ function sanytizeObjectValue (value) {
       }
     } else if (type === 'number') {
       // Number values are Positive Integer
-      obj[key] = Math.max(0, Math.round(Number(val)) || 0)
+      val = Math.max(0, Math.round(Number(val)) || 0)
     }
 
     obj[key] = val
