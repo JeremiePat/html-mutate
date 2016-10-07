@@ -1,0 +1,6 @@
+{
+  "li.fruit": {
+    "clone": 1,
+    "append": "<li class=\"blue\">Smurf</li>"
+  }
+}

@@ -32,11 +32,24 @@ describe('Testing DATA API', function () {
       { title: 'Regular prepend syntax', files: 'prepend' }
     ],
     'Cloning Content': [
-      { title: 'Regular clone syntax', files: 'clone' }
+      { title: 'Regular clone syntax', files: 'clone' },
+      { title: 'Clone remove the id attribute', files: 'clone-id'}
     ],
     'Mutating Attributes': [
       { title: 'Changing attribute values', files: 'attributes' },
       { title: 'Removing attributes', files: 'attributes-remove' }
+    ],
+    'Mixing actions on a selector': [
+      { title: 'Replace + Append', files: 'mix-replace-append' },
+      { title: 'Replace + Prepend', files: 'mix-replace-prepend' },
+      { title: 'Prepend + Append', files: 'mix-prepend-append' },
+      { title: 'Replace + Attributes', files: 'mix-replace-attributes' },
+      { title: 'Prepend + Attributes', files: 'mix-prepend-attributes' },
+      { title: 'Append + Attributes', files: 'mix-append-attributes' },
+      { title: 'Clone + replace', files: 'mix-clone-replace' },
+      { title: 'Clone + Prepend', files: 'mix-clone-prepend' },
+      { title: 'Clone + Append', files: 'mix-clone-append' },
+      { title: 'Clone + Attributes', files: 'mix-clone-attributes' }
     ]
   }
 

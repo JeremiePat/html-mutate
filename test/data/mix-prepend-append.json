@@ -1,0 +1,6 @@
+{
+  "main": {
+    "prepend": "\nHi!\n",
+    "append": "\nBye!\n"
+  }
+}
