@@ -46,7 +46,7 @@ class Clone extends Transform {
   constructor (nbr) {
     super()
     this.nbr = Math.max(0, Number(nbr) || 0)
-    this.store = ['\n']
+    this.store = []
   }
 
   _transform (buf, _, cb) {
@@ -177,16 +177,18 @@ function inject (data) {
       var stream = elem.createStream({outer: ('clone' in val)})
       var queue = stream
 
-      if ('clone' in val) {
-        let clone = new Clone(val.clone)
-        queue = queue.pipe(clone)
-      }
-
       if ('prepend' in val) { queue.write(val.prepend) }
 
       if ('replace' in val) {
         let replace = new Replace(val.replace)
         queue = queue.pipe(replace)
+      }
+
+      if ('clone' in val) {
+        let clone = new Clone(val.clone)
+        queue = queue.pipe(clone)
+
+        val['attr:id'] = null
       }
 
       if ('append' in val) {
