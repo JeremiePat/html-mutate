@@ -7,10 +7,8 @@ const trumpet = require('trumpet')
 const { Readable, Transform } = require('stream')
 const concat = require('./lib/concat')
 
-// Helpers
+// Custom Transform for HTML elements
 // ----------------------------------------------------------------------------
-
-const ATTR_RGX = /^attr:[a-z-]+$/
 
 class Append extends Transform {
   constructor (value) {
@@ -68,7 +66,38 @@ class Clone extends Transform {
   }
 }
 
-function sanytizeValue (value) {
+// Helpers
+// ----------------------------------------------------------------------------
+
+function keyType (key) {
+  if (key === 'replace') { return 'string' }
+  if (key === 'prepend') { return 'string' }
+  if (key === 'append') { return 'string' }
+  if (key === 'clone') { return 'number' }
+
+  if (key.slice(0, 5) === 'attr:') { return 'string' }
+}
+
+function isAttributeKey (key) {
+  if (key.slice(0, 5) !== 'attr:') { return false }
+
+  return key.slice(5)
+}
+
+/** Make sure a value is a Value Object with the appropriate key
+ *
+ * a Value Object is an object with at least one of the following key:
+ *
+ * - `replace`: {String}
+ * - `prepend`: {String}
+ * - `append` : {String}
+ * - `clone`  : {Integer}
+ * - `attr:*` : {String}
+ *
+ * @param value {Any} The value to sanytize
+ * @return {Object||null}
+ */
+function sanytizeObjectValue (value) {
   if (typeof value === 'string') {
     return {replace: value}
   }
@@ -82,16 +111,30 @@ function sanytizeValue (value) {
   }
 
   return Object.keys(value).reduce((obj, key) => {
-    if (key === 'replace' ||
-        key === 'append' ||
-        key === 'prepend' ||
-        ATTR_RGX.test(key)) {
-      obj[key] = value[key]
+    var type = keyType(key)
+    var val = value[key]
+
+    if (type === 'string') {
+      if (
+        // Objects and null are converted to an empty string
+        typeof val === 'object' ||
+
+        // Arrays are also converted to an empty string
+        Array.isArray(val) ||
+
+        // finaly, Falsy value (except 0) are also converted to an empty string
+        (!val && val !== 0)
+      ) {
+        val = ''
+      } else {
+        val = String(val)
+      }
+    } else if (type === 'number') {
+      // Number values are Positive Integer
+      obj[key] = Math.max(0, Math.round(Number(val)) || 0)
     }
 
-    if (key === 'clone') {
-      obj[key] = Math.max(0, Number(value[key]) || 0)
-    }
+    obj[key] = val
 
     return obj
   }, {})
@@ -107,7 +150,7 @@ function valueAccessor (value) {
     var pos = 0
 
     while (true) {
-      yield sanytizeValue(value[pos])
+      yield sanytizeObjectValue(value[pos])
       pos = Math.min(pos + 1, max)
     }
   })()
@@ -154,9 +197,9 @@ function inject (data) {
       queue.pipe(stream)
 
       Object.keys(val).forEach(function (key) {
-        if (!ATTR_RGX.test(key)) { return }
+        var attr = isAttributeKey(key)
+        if (!attr) { return }
 
-        var attr = key.slice(5)
         var aVal = val[key]
 
         if (!aVal || typeof aVal === 'object') {
