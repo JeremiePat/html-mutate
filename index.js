@@ -44,6 +44,30 @@ class Replace extends Transform {
   }
 }
 
+class Clone extends Transform {
+  constructor (nbr) {
+    super()
+    this.nbr = Math.max(0, Number(nbr) || 0)
+    this.store = ['\n']
+  }
+
+  _transform (buf, _, cb) {
+    this.store.push(buf.toString())
+    cb(null, buf)
+  }
+
+  _flush (cb) {
+    while (this.nbr > 0) {
+      this.store.forEach((str) => {
+        this.push(str)
+      })
+      this.nbr -= 1
+    }
+
+    cb()
+  }
+}
+
 function sanytizeValue (value) {
   if (typeof value === 'string') {
     return {replace: value}
@@ -63,6 +87,10 @@ function sanytizeValue (value) {
         key === 'prepend' ||
         ATTR_RGX.test(key)) {
       obj[key] = value[key]
+    }
+
+    if (key === 'clone') {
+      obj[key] = Math.max(0, Number(value[key]) || 0)
     }
 
     return obj
@@ -103,8 +131,13 @@ function inject (data) {
         return
       }
 
-      var stream = elem.createStream()
+      var stream = elem.createStream({outer: ('clone' in val)})
       var queue = stream
+
+      if ('clone' in val) {
+        let clone = new Clone(val.clone)
+        queue = queue.pipe(clone)
+      }
 
       if ('prepend' in val) { queue.write(val.prepend) }
 
