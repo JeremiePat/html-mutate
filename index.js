@@ -4,68 +4,11 @@
 // ----------------------------------------------------------------------------
 const fs = require('fs')
 const trumpet = require('trumpet')
-const { Readable, Transform } = require('stream')
-const concat = require('./lib/concat')
+const { Readable } = require('stream')
 
-// Custom Transform for HTML elements
-// ----------------------------------------------------------------------------
-
-class Append extends Transform {
-  constructor (value) {
-    super()
-    this.value = String(value)
-  }
-
-  _transform (buf, _, cb) {
-    cb(null, buf)
-  }
-
-  _flush (cb) {
-    this.push(this.value)
-    cb()
-  }
-}
-
-class Replace extends Transform {
-  constructor (value) {
-    super()
-    this.value = String(value)
-  }
-
-  _transform (buf, _, cb) {
-    cb()
-  }
-
-  _flush (cb) {
-    this.push(this.value)
-    cb()
-  }
-}
-
-class Clone extends Transform {
-  constructor (nbr) {
-    super()
-    this.nbr = Math.max(0, Number(nbr) || 0)
-    this.store = []
-  }
-
-  _transform (buf, _, cb) {
-    this.store.push(buf.toString())
-    cb(null, buf)
-  }
-
-  _flush (cb) {
-    while (this.nbr > 0) {
-      this.store.forEach((str) => {
-        this.push(str)
-      })
-      this.nbr -= 1
-    }
-
-    cb()
-  }
-}
 const each = require('./lib/each')
+const strm = require('./lib/transform')
+const concat = require('./lib/concat')
 
 // Helpers
 // ----------------------------------------------------------------------------
@@ -179,20 +122,17 @@ function inject (data) {
       if ('prepend' in val) { queue.write(val.prepend) }
 
       if ('replace' in val) {
-        let replace = new Replace(val.replace)
-        queue = queue.pipe(replace)
+        queue = queue.pipe(strm.replace(val.replace))
       }
 
       if ('clone' in val) {
-        let clone = new Clone(val.clone)
-        queue = queue.pipe(clone)
+        queue = queue.pipe(strm.clone(val.clone))
 
         val['attr:id'] = null
       }
 
       if ('append' in val) {
-        let append = new Append(val.append)
-        queue = queue.pipe(append)
+        queue = queue.pipe(strm.append(val.append))
       }
 
       queue.pipe(stream)
