@@ -77,6 +77,8 @@ function keyType (key) {
   if (key === 'clone') { return 'number' }
 
   if (key.slice(0, 5) === 'attr:') { return 'string' }
+
+  return false
 }
 
 /** Make sure a value is a Value Object with the appropriate key
@@ -108,6 +110,8 @@ function sanytizeObjectValue (value) {
   return Object.keys(value).reduce((obj, key) => {
     var type = keyType(key)
     var val = value[key]
+
+    if (!type) { return obj }
 
     if (type === 'string') {
       if (
