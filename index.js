@@ -82,7 +82,7 @@ function sanytizeObjectValue (value) {
   }, {})
 }
 
-function valueAccessor (value) {
+function getValueAccessor (value) {
   if (!Array.isArray(value)) {
     value = [value]
   }
@@ -106,10 +106,10 @@ function inject (data) {
   const transform = trumpet()
 
   each(data, (selector, value) => {
-    value = valueAccessor(value)
+    var nextValue = getValueAccessor(value)
 
-    transform.selectAll(selector, function (elem) {
-      const val = value()
+    transform.selectAll(selector, (elem) => {
+      const val = nextValue()
 
       if (!val) {
         elem.createWriteStream({outer: true}).end('')
@@ -152,6 +152,9 @@ function inject (data) {
 
   return transform
 }
+
+// API Wrapper
+// ----------------------------------------------------------------------------
 
 function callback (stream, data, cb) {
   stream(data).pipe(concat(cb))
