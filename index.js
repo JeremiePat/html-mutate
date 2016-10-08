@@ -76,6 +76,10 @@ function sanytizeObjectValue (value) {
       val = Math.max(0, Math.round(Number(val)) || 0)
     }
 
+    if (key === 'clone') {
+      obj['attr:id'] = value['attr:id'] = ''
+    }
+
     obj[key] = val
 
     return obj
@@ -117,25 +121,13 @@ function inject (data) {
       }
 
       var stream = elem.createStream({outer: ('clone' in val)})
-      var queue = stream
 
-      if ('prepend' in val) { queue.write(val.prepend) }
-
-      if ('replace' in val) {
-        queue = queue.pipe(strm.replace(val.replace))
-      }
-
-      if ('clone' in val) {
-        queue = queue.pipe(strm.clone(val.clone))
-
-        val['attr:id'] = null
-      }
-
-      if ('append' in val) {
-        queue = queue.pipe(strm.append(val.append))
-      }
-
-      queue.pipe(stream)
+      stream
+        .pipe(strm.replace(val))
+        .pipe(strm.prepend(val))
+        .pipe(strm.clone(val))
+        .pipe(strm.append(val))
+        .pipe(stream)
 
       each(val, (key, aVal) => {
         var [, attr] = key.split(':')
