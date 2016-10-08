@@ -65,6 +65,7 @@ class Clone extends Transform {
     cb()
   }
 }
+const each = require('./lib/each')
 
 // Helpers
 // ----------------------------------------------------------------------------
@@ -157,8 +158,8 @@ function valueAccessor (value) {
 function inject (data) {
   const transform = trumpet()
 
-  Object.keys(data).forEach(function (selector) {
-    var value = valueAccessor(data[selector])
+  each(data, (selector, value) => {
+    value = valueAccessor(value)
 
     transform.selectAll(selector, function (elem) {
       const val = value()
@@ -192,11 +193,9 @@ function inject (data) {
 
       queue.pipe(stream)
 
-      Object.keys(val).forEach(function (key) {
+      each(val, (key, aVal) => {
         var [, attr] = key.split(':')
         if (!attr) { return }
-
-        var aVal = val[key]
 
         if (!aVal || typeof aVal === 'object') {
           elem.removeAttribute(attr)
