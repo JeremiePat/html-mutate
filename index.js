@@ -9,7 +9,7 @@ const { Readable } = require('stream')
 const each = require('./lib/each')
 const strm = require('./lib/transform')
 const concat = require('./lib/concat')
-const { getValueAccessor } = require('./lib/sanitize')
+const getValueAccessor = require('./lib/sanitize')
 
 // Helpers
 // ----------------------------------------------------------------------------
