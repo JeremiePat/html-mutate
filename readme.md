@@ -1,7 +1,7 @@
 HTML Mutate
 ===============================================================================
 
-Manipulate HTML on the fly and inject data using simple CSS selectors
+Manipulate HTML on the fly and inject data using [simple CSS selectors](https://github.com/chrisdickinson/cssauron)
 
 
 Install
@@ -36,7 +36,7 @@ var mutate = require('html-mutate')
 var template = mutate('<!DOCTYPE html><title></title><main></main>')
 ```
 
-### template(data)
+### `template(data)`
 
 Return a readable stream of the resulting HTML file
 
@@ -53,7 +53,7 @@ const template = mutate('./base.html')
 template(data).pipe(fs.createWriteStream('./index.html'))
 ```
 
-### template.callback(data, fn)
+### `template.callback(data, fn)`
 
 `fn` is a callback function that will be called once the `data` would have been
 injected into the HTML flow. It follows node conventions for callback with the
@@ -74,7 +74,7 @@ template.callback(data, (err, html) => {
 })
 ```
 
-### template.promise(data)
+### `template.promise(data)`
 
 Return a Promise where the success callback will get the transformed HTML
 
@@ -92,7 +92,7 @@ template.promise(data).then((html) => {
 })
 ```
 
-### template.inject(data)
+### `template.inject(data)`
 
 Return a transform stream that will inject data into any HTML read stream. This
 is especially handy to chain data injection or to output several file out of
@@ -123,34 +123,65 @@ The template magic is based on the data format used. Data are a collection of
 key/value pair where the key is a valid CSS selector and the value is an object
 (or array of object) defining the data to be injected and how to inject them.
 
+a value Object can have one or more of the following properties:
+
+- `replace` : The new HTML content for the element
+- `append`  : The HTML content to put after the current content
+- `prepend` : The HTML content to put before the current content
+- `clone`   : The number of clones of the current element to create
+- `attr:*`  : The new content for the attribute `*` (where `*` is the name of
+              the targeted attribute)
+
 ### Replacing element content
 
-```json
-{
-  "main": {
-    "replace": "<p>Hello world!</p>"
+```javascript
+const mutate = require('html-mutate')
+
+var template = mutate('<body>Hi!</body>')
+
+template({
+  'body': {
+    replace: '<p>Hello world!</p>'
   }
-}
+}).pipe(process.stdout)
+
+// Output:
+// <body><p>Hello world!</p></body>
 ```
 
-For a straight replacement, you can use a compact syntax:
-```json
-{
-  "main": "<p>Hello world!</p>"
-}
+For a simple straight replacement, you can use a compact syntax:
+
+```javascript
+const mutate = require('html-mutate')
+
+var template = mutate('<body>Hi!</body>')
+
+template({
+  'body': '<p>Hello world!</p>'
+}).pipe(process.stdout)
+
+// Output:
+// <body><p>Hello world!</p></body>
 ```
 
 > **NOTE:** _Using the value `null` will remove the element if it exists_
 
 ### Append or prepend content to element
 
-```json
-{
-  "main": {
-    "prepend": "<p>Hi!</p>",
-    "append" : "<p>Bye!</p>"
+```javascript
+const mutate = require('html-mutate')
+
+var template = mutate('<body>Hello world!</body>')
+
+template({
+  'body': {
+    prepend: '<p>Hi!</p>',
+    append : '<p>Bye!</p>'
   }
-}
+}).pipe(process.stdout)
+
+// Output:
+// <body><p>Hi!</p>Hello world!<p>Bye!</p></body>
 ```
 
 ### Selector matching more than one element
@@ -162,23 +193,42 @@ successively used to alter the elements.
 If there are more elements than values then the extra elements will be altered
 using the last available value.
 
-```json
-{
-  ".page": [
-    {"replace": 1},
-    {"replace": 2},
-    {"replace": 3},
-    {"replace": 4},
-    {"replace": 5},
+```javascript
+const mutate = require('html-mutate')
+
+var template = mutate([
+  '<ul>',
+  '<li>A</li>',
+  '<li>B</li>',
+  '<li>C</li>',
+  '<li>D</li>',
+  '<li>E</li>',
+  '</ul>'
+].join('\n'))
+
+template({
+  'li': [
+    { replace: 1 },
+    { replace: 2 },
+    { replace: 3 }
   ]
-}
+}).pipe(process.stdout)
+
+// Output:
+// <ul>
+// <li>1</li>
+// <li>2</li>
+// <li>3</li>
+// <li>3</li>
+// <li>3</li>
+// </ul>
 ```
 
 Again, for a straight replacement, you can use a more compact syntax:
 
 ```json
 {
-  ".page": [1, 2, 3, 4, 5]
+  'li': [1, 2, 3]
 }
 ```
 
@@ -188,12 +238,25 @@ It is possible to replace attribute content rather than element content.
 To do this, use the key `attr:*` in the value object where `*` is the name of
 the attribute to change.
 
-```json
-{
-  "meta[name=description]": {
-    "attr:content": "Hello World"
+```javascript
+const mutate = require('html-mutate')
+
+var template = mutate([
+  '<head>',
+  '<meta name="description">',
+  '</head>'
+].join('\n'))
+
+template({
+  'meta[name=description]': {
+    'attr:content': 'Hello World'
   }
-}
+}).pipe(process.stdout)
+
+// Output
+// <head>
+// <meta name="description" content="Helle World">
+// </head>
 ```
 
 > **NOTE:** _Using the value `null` will remove the attribute if it exists_
@@ -212,7 +275,8 @@ html({node
   "span": { clone: 2 }
 }).pipe(process.stdout)
 
-// Output: <span>Hi!</span><span>Hi!</span><span>Hi!</span>\n
+// Output:
+// <span>Hi!</span><span>Hi!</span><span>Hi!</span>\n
 ```
 
 > **NOTE:** _When using clone, if the target element has an `id` attribute,
@@ -222,8 +286,7 @@ html({node
             shouldn't._
 
 Rather than duplicating an element, it is possible to replace it using
-`clone:0` with `replace` to define the new element (or to remove it if you use
-`replace:null`):
+`clone:0` with `replace` to define the new element:
 
 ```javascript
 const mutate = require('html-mutate')
@@ -237,10 +300,82 @@ html({node
   }
 }).pipe(process.stdout)
 
-// Output: <strong>Hello</strong>\n
+// Output:
+// <strong>Hello</strong>\n
 ```
 
 More examples?
 -------------------------------------------------------------------------------
 
 Just look at the [tests](./test) ;)
+
+But for a more real life example, here what it is possible to do:
+
+Giving the following HTML (`base.html`)
+
+```html
+<!DOCTYPE html>
+<meta charset="utf8">
+<title>To do list</title>
+
+<main>
+  <h1>What should be done</h1>
+  <ul>
+    <li>Write some HTML</li>
+    <li>Save the world</li>
+  </ul>
+</main>
+```
+
+Applying the following transformation
+
+```javascript
+const fs     = require('fs')
+const mutate = require('html-mutate')
+
+const template = mutate('./base.html')
+const stream   = template({})
+
+stream
+  .pipe(template.inject({
+    'h1': 'What have been be done',
+    'li:first-child': {
+      clone: 1,
+      append: [
+        '</ul>',
+        '<h2>What remains</h2>',
+        '<ul>'
+      ].join('')
+    }
+  }))
+  .pipe(template.inject({
+    'h1 + ul li': [{
+      'attr:class': 'done',
+      replace: 'Wrote some HTML'
+    }, {
+      'attr:class': 'in-progress',
+      replace: 'Wrote some JavaScript'
+    }]
+  }))
+  .pipe(fs.createWriteStream('./todo.html'))
+```
+
+You'll get the following (beautified) result (`todo.html`)
+
+```html
+<!DOCTYPE html>
+<meta charset="utf8">
+<title>To do list</title>
+
+<main>
+  <h1>What have been be done</h1>
+  <ul>
+    <li class="done">Wrote some HTML</li>
+    <li class="in-progress">Wrote some JavaScript</li>
+  </ul>
+  <h2>What remains</h2>
+  <ul>
+    <li>Save the world</li>
+  </ul>
+</main>
+```
