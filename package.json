@@ -1,6 +1,6 @@
 {
   "name": "html-mutate",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Manipulate HTML on the fly and inject data using simple CSS selectors",
   "author": "Jeremie Patonnier <jeremie.patonnier@gmail.com>",
   "license": "MIT",
