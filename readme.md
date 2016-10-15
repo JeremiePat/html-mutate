@@ -94,9 +94,9 @@ template.promise(data).then((html) => {
 
 ### `template.inject(data)`
 
-Return a transform stream that will inject data into any HTML read stream. This
-is especially handy to chain data injection or to output several file out of
-one template.
+Return a ([Trumpet](https://github.com/substack/node-trumpet)) transform stream
+that will inject data into any HTML read stream. This is especially handy to
+chain data injection or to output several file out of one template.
 
 ```javascript
 const fs     = require('fs')
@@ -114,6 +114,66 @@ stream
 stream
   .pipe(template.inject(data2))
   .pipe(fs.createWriteStream('./page.html'))
+```
+
+As the stream produced is a [Trumpet](https://github.com/substack/node-trumpet)
+stream it allows to add custom transform behaviors:
+
+```javascript
+const fs     = require('fs')
+const mutate = require('html-mutate')
+const data1  = require('./data1.json')
+
+const ROOT = 'http://localhost/'
+
+const template = mutate('./base.html')
+const stream   = template({})
+
+// Replace any $ symbol at the begining
+// of a URL by a given value
+const updateURL = template.inject({})
+
+updateURL.selectAll('[href]', (elem) => {
+  elem.getAttribute('href', (val) => {
+    elem.setAttribute('href', val.replace(/^\$\//, ROOT))
+  })
+})
+
+stream
+  .pipe(template.inject(data1))
+  .pipe(updateURL)
+  .pipe(fs.createWriteStream('./index.html'))
+```
+
+As another example, it can be use to create a simple partial inclusion
+mechanism:
+
+```javascript
+const fs     = require('fs')
+const path   = require('path')
+const mutate = require('html-mutate')
+const data1  = require('./data1.json')
+
+const template = mutate('./base.html')
+const stream   = template({})
+
+const inclusion = template.inject({})
+
+// Use a custom <inc src="path/to/partial" />
+// tag to deal with inclusion
+inclusion.selectAll('inc[src]', (elem) => {
+  elem.getAttribute('src', (src) => {
+    var DEST = elem.createWriteStream({outer: true})
+    var SRC = fs.createReadStream(src)
+
+    SRC.pipe(DEST)
+  })
+})
+
+stream
+  .pipe(inclusion)
+  .pipe(template.inject(data1))
+  .pipe(fs.createWriteStream('./index.html'))
 ```
 
 Data magic
@@ -311,7 +371,7 @@ Just look at the [tests](./test) ;)
 
 But for a more real life example, here what it is possible to do:
 
-Giving the following HTML (`base.html`)
+Giving the following HTML file `base.html`
 
 ```html
 <!DOCTYPE html>
@@ -360,7 +420,7 @@ stream
   .pipe(fs.createWriteStream('./todo.html'))
 ```
 
-You'll get the following (beautified) result (`todo.html`)
+You'll get the following (beautified) result within `todo.html`
 
 ```html
 <!DOCTYPE html>
